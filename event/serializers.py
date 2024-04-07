@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import *
+from .models import UserEvent, Event, EventDetail, Item
+
 
 
 class UserEventSerializer(serializers.ModelSerializer):
