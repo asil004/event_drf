@@ -1,4 +1,7 @@
+from django.contrib.auth import get_user_model
 from django.db import models
+
+user = get_user_model()
 
 
 class Item(models.Model):
@@ -26,6 +29,6 @@ class EventDetail(models.Model):
 
 
 class UserEvent(models.Model):
-    user = models.Model(User, models.CASCADE, related_name='user_event')
+    user = models.ForeignKey(user, models.CASCADE, related_name='user_event')
     event = models.ForeignKey(Event, models.PROTECT, related_name='user_event')
     event_detail = models.ForeignKey(EventDetail, models.PROTECT, related_name='user_event_detail')
