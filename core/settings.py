@@ -39,10 +39,12 @@ INSTALLED_APPS = [
 
     'account.apps.AccountConfig',
     'event.apps.EventConfig',
-  
+
     'rest_framework_simplejwt',
     'rest_framework',
-    'drf_yasg'
+    'drf_yasg',
+
+    'corsheaders',
 
 ]
 
@@ -62,7 +64,6 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
 }
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -71,6 +72,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -146,7 +149,6 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 AUTH_USER_MODEL = 'account.User'
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
@@ -187,3 +189,9 @@ JAZZMIN_UI_TWEAKS = {
     "actions_sticky_top": False
 }
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://localhost:3000",
+    "http://localhost:7070",
+]
