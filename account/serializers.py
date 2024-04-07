@@ -1,9 +1,15 @@
 from typing import Dict, Any
+
+from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
-from .models import User
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import make_password
+
+User = get_user_model()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -13,13 +19,20 @@ class RegisterSerializer(serializers.ModelSerializer):
     )
 
     password = serializers.CharField(write_only=True, required=True)
+    confirm_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('first_name', 'email', 'password')
+        fields = ('first_name', 'email', 'password', 'confirm_password')
         extra_kwargs = {
             'first_name': {'required': True},
         }
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords must match.")
+
+        return data
 
     def create(self, validated_data):
         user = User.objects.create(
@@ -44,15 +57,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 
-# change
 class ChangePasswordSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
-    old_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('id', 'old_password', 'password', 'password2')
+        fields = ('id', 'password', 'password2')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -61,16 +72,16 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_old_password(self, value):
-        user = self.context['request'].user
-        if not user.check_password(value):
-            raise serializers.ValidationError({"old_password": "Old password is not correct"})
+        user_id = self.initial_data.get('id')  # Initial data contains the id provided in the request
+        user = User.objects.get(id=user_id)
+
+        if not check_password(value, user.password):
+            raise serializers.ValidationError("Old password is not correct")
         return value
 
     def update(self, instance, validated_data):
-
-        instance.set_password(validated_data['password'])
+        instance.password = make_password(validated_data['password'])
         instance.save()
-
         return instance
 
 
