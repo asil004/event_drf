@@ -19,6 +19,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # apps
     path("api/v1/", include("event.urls")),
+    path('api/v1/', include('account.urls'))
 
     # swagger
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
