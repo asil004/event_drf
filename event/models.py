@@ -15,10 +15,17 @@ class Event(models.Model):
 class Item(models.Model):
     name = models.CharField(max_length=100)
     image = models.ImageField(upload_to='item/')
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_items')
 
     def __str__(self):
         return str(self.name)
+
+
+class EventImage(models.Model):
+    image = models.ImageField(upload_to='event_img/')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_images')
+
+    def __str__(self):
+        return str(self.event.name)
 
 
 class EventDetail(models.Model):
@@ -28,14 +35,15 @@ class EventDetail(models.Model):
     phone_number = models.CharField(max_length=15)
 
     def __str__(self):
-        return str(self.phone_number)
+        return f"{self.phone_number} {self.address} {self.date}"
 
 
 class UserEvent(models.Model):
     user = models.ForeignKey(user, models.CASCADE, related_name='user_event')
-    event = models.ForeignKey(Event, models.PROTECT, related_name='user_event')
+    event = models.ForeignKey(Event, models.CASCADE, related_name='user_event')
     items = models.ManyToManyField(Item)
-    event_detail = models.ForeignKey(EventDetail, models.PROTECT, related_name='user_event_detail')
+    event_detail = models.ForeignKey(EventDetail, models.CASCADE, related_name='user_event_detail')
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(self.user.first_name)
+        return f"{self.user.first_name}, {self.event.name}, {self.event_detail.date}"
