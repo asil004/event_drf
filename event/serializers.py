@@ -1,9 +1,17 @@
 from rest_framework import serializers
 
-from .models import UserEvent, Event, EventDetail, Item
+from .models import UserEvent, Event, EventDetail, Item, EventImage
+
+
+class EventImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventImage
+        fields = ('image',)
 
 
 class EventSerializer(serializers.ModelSerializer):
+    event_images = EventImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = Event
         fields = '__all__'
@@ -28,7 +36,7 @@ class UserEventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserEvent
-        fields = ('id', 'event', 'items', 'event_detail')
+        fields = ('id', 'is_active', 'event', 'items', 'event_detail')
 
 
 class UserEventCreateSerializer(serializers.ModelSerializer):
@@ -37,3 +45,5 @@ class UserEventCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserEvent
         fields = ('id', 'event', 'items', 'event_detail')
+
+# admin
