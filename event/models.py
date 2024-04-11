@@ -32,8 +32,8 @@ class EventImage(models.Model):
 
 class EventDetail(models.Model):
     address = models.CharField(max_length=255)
-    date = models.DateField()
-    time = models.TimeField()
+    date = models.CharField(max_length=50)
+    time = models.CharField(max_length=50)
     phone_number = models.CharField(max_length=15)
 
     def __str__(self):
