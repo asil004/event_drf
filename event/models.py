@@ -1,12 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from event.validators import validate_svg
+
 user = get_user_model()
 
 
 class Event(models.Model):
     name = models.CharField(max_length=75)
-    image = models.ImageField(upload_to='event/')
+    image = models.FileField(upload_to='event/', validators=[validate_svg])
 
     def __str__(self):
         return str(self.name)
@@ -14,7 +16,7 @@ class Event(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='item/')
+    image = models.FileField(upload_to='item/', validators=[validate_svg])
 
     def __str__(self):
         return str(self.name)
