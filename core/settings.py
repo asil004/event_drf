@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'account.apps.AccountConfig',
     'event.apps.EventConfig',
 
-    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
     'drf_yasg',
 
