@@ -3,12 +3,12 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import ChangePasswordSerializer, \
     RegisterSerializer, MyTokenObtainPairSerializer, LogoutSerializer, ForgotPasswordSerializer, CodeCheckSerializer, \
-    UserSerializer, AdminSerializer
-
+    UserSerializer, AdminSerializer, AdminLoginSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
 from django.core.mail import send_mail
 import smtplib
@@ -23,6 +23,20 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
+
+        return Response({
+            "message": "User registered successfully.",
+            "refresh": str(refresh),
+            "access": str(access)
+        }, status=status.HTTP_201_CREATED)
+
 
 class MyObtainTokenPairView(TokenObtainPairView):
     permission_classes = (AllowAny,)
@@ -31,8 +45,8 @@ class MyObtainTokenPairView(TokenObtainPairView):
 
 # change user
 class ChangePasswordView(generics.UpdateAPIView):
-    permission_classes = (IsAuthenticated,)
     serializer_class = ChangePasswordSerializer
+    queryset = User.objects.all()
 
     def get_object(self):
         return self.request.user
@@ -54,7 +68,6 @@ class LogoutAPIView(generics.GenericAPIView):
 
 
 class ForgotPasswordView(APIView):
-    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(request_body=ForgotPasswordSerializer)
     def post(self, request):
@@ -69,7 +82,7 @@ class ForgotPasswordView(APIView):
 
             # Parolni tiklash uchun kod yaratish
             code = ''.join(random.choices('0123456789', k=6))
-            user.last_name = code
+            user.gmail_code = code
             user.save()
 
             # Email yuborish
@@ -91,7 +104,7 @@ class VerifyCodeView(APIView):
     @swagger_auto_schema(request_body=CodeCheckSerializer)
     def post(self, request):
         code = request.data.get('code')  # Foydalanuvchi kiritgan kod
-        user = User.objects.filter(last_name=code).first()  # Kodni tekshirish
+        user = User.objects.filter(gmail_code=code).first()  # Kodni tekshirish
 
         if user:  # Agar kod to'g'ri bo'lsa
             return Response({'message': 'Ok code'}, status=status.HTTP_200_OK)
@@ -131,3 +144,8 @@ class AdminUpdatenameView(APIView):
             return Response({'message': 'Ism va familya o\'zgartirildi'}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminLoginView(TokenObtainPairView):
+    permission_classes = (AllowAny,)
+    serializer_class = AdminLoginSerializer

@@ -28,7 +28,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Passwords must match.")
+            raise serializers.ValidationError("Parollar mos kelishi kerak.")
 
         return data
 
@@ -56,22 +56,22 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('id', 'password', 'password2')
+        fields = ('email', 'password', 'password2')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
-
         return attrs
 
     def validate_old_password(self, value):
-        user_id = self.initial_data.get('id')  # Initial data contains the id provided in the request
-        user = User.objects.get(id=user_id)
+        user_email = self.initial_data.get('email')  # Initial data contains the id provided in the request
+        user = User.objects.get(email=user_email)
 
         if not check_password(value, user.password):
             raise serializers.ValidationError("Old password is not correct")
@@ -80,26 +80,6 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.password = make_password(validated_data['password'])
         instance.save()
-        return instance
-
-    def validate_username(self, value):
-        user = self.context['request'].user
-        if User.objects.exclude(pk=user.pk).filter(username=value).exists():
-            raise serializers.ValidationError({"username": "This username is already in use."})
-        return value
-
-    def update(self, instance, validated_data):
-        user = self.context['request'].user
-
-        if user.pk != instance.pk:
-            raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
-
-        instance.first_name = validated_data['first_name']
-        instance.last_name = validated_data['last_name']
-        instance.email = validated_data['email']
-
-        instance.save()
-
         return instance
 
 
@@ -135,3 +115,19 @@ class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name')
+
+
+class AdminLoginSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super(AdminLoginSerializer, cls).get_token(user)
+
+        # Add custom claims
+        if user.is_superuser or user.is_staff:
+            token['is_admin'] = True
+            token['email'] = user.email
+            return token
+        else:
+            token['is_admin'] = False
+            raise serializers.ValidationError({"Password is wrong": "You are not an admin"})
