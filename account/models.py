@@ -35,7 +35,7 @@ class CustomUserManager(BaseUserManager):
 class User(AbstractUser):
     email = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
-    gmail_code = models.IntegerField(max_length=6, blank=True, null=True)
+    gmail_code = models.IntegerField(blank=True, null=True)
 
     REQUIRED_FIELDS = []
     username = None
