@@ -67,7 +67,7 @@ class AdminUpcomingUpdateAPIView(APIView):
     def put(self, request, pk):
 
         try:
-            user_event = UserEvent.objects.filter(id=pk, is_active=True)
+            user_event = UserEvent.objects.get(id=pk, is_active=True)
         except Exception as e:
             return Response({"detail": f"UserEvent not found e-> {e}"}, status=status.HTTP_404_NOT_FOUND)
 
