@@ -128,3 +128,9 @@ class AdminLoginSerializer(TokenObtainPairSerializer):
         else:
             token['is_admin'] = False
             raise serializers.ValidationError({"Password is wrong": "You are not an admin"})
+
+
+class GetMyAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'email','is_superuser')
