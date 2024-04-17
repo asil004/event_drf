@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,7 +9,7 @@ from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import ChangePasswordSerializer, \
     RegisterSerializer, MyTokenObtainPairSerializer, LogoutSerializer, ForgotPasswordSerializer, CodeCheckSerializer, \
-    UserSerializer, AdminSerializer, AdminLoginSerializer
+    UserSerializer, AdminSerializer, AdminLoginSerializer, GetMyAccountSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
 from django.core.mail import send_mail
@@ -73,6 +74,7 @@ class ChangePasswordView(APIView):
             return Response({"detail": "Password updated successfully."})
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LogoutAPIView(generics.GenericAPIView):
     serializer_class = LogoutSerializer
@@ -168,3 +170,17 @@ class AdminUpdatenameView(APIView):
 class AdminLoginView(TokenObtainPairView):
     permission_classes = (AllowAny,)
     serializer_class = AdminLoginSerializer
+
+
+class GetMyAccount(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        # Step 1: Instantiate the serializer with user instance
+        serializer = GetMyAccountSerializer(request.user)
+
+        # Step 2: Serialize user's data
+        serialized_data = serializer.data
+
+        # Step 3: Return serialized data as response
+        return Response(serialized_data,status=status.HTTP_200_OK)
