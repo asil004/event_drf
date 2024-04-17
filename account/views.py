@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -44,16 +45,34 @@ class MyObtainTokenPairView(TokenObtainPairView):
 
 
 # change user
-class ChangePasswordView(generics.UpdateAPIView):
+class ChangePasswordView(APIView):
     serializer_class = ChangePasswordSerializer
-    queryset = User.objects.all()
 
-    def get_object(self):
-        return self.request.user
-
+    @swagger_auto_schema(request_body=ChangePasswordSerializer)
     def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data.get('email')
+            password = serializer.validated_data.get('password')
+            password2 = serializer.validated_data.get('password2')
 
+            User = get_user_model()
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response({"detail": "User with provided email does not exist."},
+                                status=status.HTTP_404_NOT_FOUND)
+
+            if password != password2:
+                return Response({"detail": "Password fields didn't match."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            user.set_password(password)
+            user.save()
+
+            return Response({"detail": "Password updated successfully."})
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutAPIView(generics.GenericAPIView):
     serializer_class = LogoutSerializer

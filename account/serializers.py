@@ -1,3 +1,4 @@
+from rest_framework.serializers import Serializer
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -55,14 +56,10 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 
-class ChangePasswordSerializer(serializers.ModelSerializer):
+class ChangePasswordSerializer(Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
-
-    class Meta:
-        model = User
-        fields = ('email', 'password', 'password2')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -70,7 +67,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_old_password(self, value):
-        user_email = self.initial_data.get('email')  # Initial data contains the id provided in the request
+        user_email = self.initial_data.get('email')
         user = User.objects.get(email=user_email)
 
         if not check_password(value, user.password):
