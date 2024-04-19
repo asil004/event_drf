@@ -143,8 +143,10 @@ class UserUpdatenameView(APIView):
             user = request.user
             new_first_name = serializer.validated_data.get('first_name')
             user.first_name = new_first_name
+            new_last_name = serializer.validated_data.get('last_name')
+            user.last_name = new_last_name
             user.save()
-            return Response({'message': 'Ism muvaffaqiyatli o\'zgartirildi'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Ism va familya o\'zgartirildi'}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
