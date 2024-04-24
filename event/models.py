@@ -34,7 +34,7 @@ class EventDetail(models.Model):
     address = models.CharField(max_length=255)
     date = models.CharField(max_length=50)
     time = models.CharField(max_length=50)
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.CharField(max_length=50)
 
     def __str__(self):
         return f"{self.phone_number} {self.address} {self.date}"
