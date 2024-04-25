@@ -44,6 +44,6 @@ class UserEventCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserEvent
-        fields = ('id', 'event', 'items', 'event_detail')
+        fields = ('id', 'event', 'items', 'event_detail', 'total_sum')
 
 # admin
