@@ -23,11 +23,9 @@ class UserEventCreateAPIView(CreateAPIView):
     serializer_class = UserEventCreateSerializer
 
     def perform_create(self, serializer):
-        print(self.request.data)
         # Get the event details from the request
         event_details = self.request.data.get('event_detail')
         # Assuming 'event_detail' contains necessary information to create an Event object
-        print(event_details)
         # Create the Event object
         event = EventDetail.objects.create(**event_details)
 
